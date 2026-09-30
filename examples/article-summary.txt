@@ -1,0 +1,1 @@
+the proposed Topic-Controlled Question Generation (T-CQG) method arXiv:2501.05220v1 enhances the relevance and effectiveness of the generated content for educational purposes. our approach uses fine-tuning on a pre-trained T5-small model,

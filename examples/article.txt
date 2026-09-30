@@ -1,0 +1,752 @@
+                                        A Novel Approach to Scalable and Automatic Topic-Controlled Question
+                                        Generation in Education
+                                        ZIQING LI, Department of Computer Science, University College London, United Kingdom
+                                        MUTLU CUKUROVA, UCL Knowledge Lab, University College London, United Kingdom
+                                        SAHAN BULATHWELA, Centre for Artificial Intelligence, University College London, United Kingdom
+                                        The development of Automatic Question Generation (QG) models has the potential to significantly improve educational practices by
+                                        reducing the teacher workload associated with creating educational content. This paper introduces a novel approach to educational
+                                        question generation that controls the topical focus of questions. The proposed Topic-Controlled Question Generation (T-CQG) method
+arXiv:2501.05220v1 [cs.CY] 9 Jan 2025
+
+
+
+
+                                        enhances the relevance and effectiveness of the generated content for educational purposes. Our approach uses fine-tuning on a
+                                        pre-trained T5-small model, employing specially created datasets tailored to educational needs. The research further explores the
+                                        impacts of pre-training strategies, quantisation, and data augmentation on the model’s performance. We specifically address the
+                                        challenge of generating semantically aligned questions with paragraph-level contexts, thereby improving the topic specificity of
+                                        the generated questions. In addition, we introduce and explore novel evaluation methods to assess the topical relatedness of the
+                                        generated questions. Our results, validated through rigorous offline and human-backed evaluations, demonstrate that the proposed
+                                        models effectively generate high-quality, topic-focused questions. These models have the potential to reduce teacher workload and
+                                        support personalised tutoring systems by serving as bespoke question generators. With its relatively small number of parameters,
+                                        the proposals not only advance the capabilities of question generation models for handling specific educational topics but also offer
+                                        a scalable solution that reduces infrastructure costs. This scalability makes them feasible for widespread use in education without
+                                        reliance on proprietary large language models like ChatGPT.
+
+                                        CCS Concepts: • Computing methodologies → Natural language generation; Information extraction; • Applied computing →
+                                        Interactive learning environments.
+
+                                        Additional Key Words and Phrases: Educational Question Generation, Formative Assessment, Summative Assessment, Personalised
+                                        Testing, Natural Language Processing
+
+                                        ACM Reference Format:
+                                        Ziqing Li, Mutlu Cukurova, and Sahan Bulathwela. 2025. A Novel Approach to Scalable and Automatic Topic-Controlled Question
+                                        Generation in Education. In LAK25: The 15th International Learning Analytics and Knowledge Conference (LAK 2025), March 03–07, 2025,
+                                        Dublin, Ireland. ACM, New York, NY, USA, 16 pages. https://doi.org/10.1145/3706468.3706487
+
+
+                                        1   Introduction
+                                        One of the most significant and pertinent challenges facing education systems today is the teachers’ workload. It is
+                                        argued to be the main reason behind issues associated with teachers’ retention in the profession as well as the lack of
+                                        interest among graduate students to go into teaching professions. On the other hand, according to the Global Report on
+
+                                        Authors’ Contact Information: Ziqing Li, Department of Computer Science, University College London, London, United Kingdom, ziqing.li.19@ucl.ac.uk;
+                                        Mutlu Cukurova, UCL Knowledge Lab, University College London, London, United Kingdom, m.cukurova@ucl.ac.uk; Sahan Bulathwela, Centre for
+                                        Artificial Intelligence, University College London, London, United Kingdom, m.bulathwela@ucl.ac.uk.
+
+                                        Permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee provided that copies are not
+                                        made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page. Copyrights for third-party
+                                        components of this work must be honored. For all other uses, contact the owner/author(s).
+                                        © 2025 Copyright held by the owner/author(s).
+                                        Manuscript submitted to ACM
+
+
+                                        Manuscript submitted to ACM                                                                                                                              1
+2                                                                                                                  Li et al.
+
+
+Teachers published by the Teacher Task Force and UNESCO, 44 million additional teachers will be needed by 2030 to
+meet Sustainable Development Goal 4 (SDG4), which aims to achieve universal primary and secondary education for
+all [52], without any improvements to the status quo. Among these concerns, generative AI in education is seen as an
+opportunity to ’transform a teacher’s day-to-day work’ [29] by reducing their workload and improving educational
+outcomes through the automation of routine tasks.
+    Creating lesson materials and generating topic-specific, relevant, and age-appropriate questions for teaching have
+long been identified as time-intensive tasks for teachers, and an area where increased consistency is also expected to
+improve educational outcomes for students [30]. Although learning analytics and AI in Education researchers have
+long explored ways to support teachers’ question generation capabilities through data-driven insights and models,
+attempts on Topic-Controlled Question Generation (T-CQG) have been less successful, primarily due to the lack of
+quality in the generated content. The use of large language models (LLMs) in teacher-facing interfaces, however, has
+the potential to address these quality concerns by leveraging recent advancements in NLP for automatic educational
+question generation (EdQG). EdQG can help teachers reduce the labor-intensive task of generating questions to
+promote classroom discussions, design formative and summative assessments, create lesson hooks, or address student
+misconceptions which are all activities that teachers consider among the most time-consuming in their profession
+[29]. Although most issues related to teachers’ workload are complex, ecosystem-level socio-technical challenges [15],
+T-CQG can serve as a small yet important practical step towards enhancing teachers’ productivity, aiming to mitigate
+workload and address issues related to teacher retention and attraction to the profession.
+    In addition to their potential to support teachers, EdQG (and T-CQG) models can be integrated into learning
+management systems (LMSs) and intelligent tutoring systems (ITSs), to advance the system’s capability to perform
+precise diagnostics on learner’s knowledge gaps. The responses received from learners can inform the learning analytics
+pipeline more precisely and frequently to have a refined learner state representation, that can empower the system
+with targeted interventions. However, such interventions require advancements to generic neural network question
+generation models that do not have the ability to contextualise generation with constraints.
+    The novelties that we introduce through this work are three-fold. We 1) propose a novel method to generate a
+dataset with contrastive examples in order to effectively train a T-CQG model and 2) validate and propose novel ways
+of evaluating the topical relatedness of the generations to the controlled topic using semantic relatedness metrics while
+3) this is the only work that attempts in using a very small language model (sLM) with ≈ 60𝑀 parameters, and succeeds
+in producing a T-CQG neural model.
+
+
+2     Problem Definition, Background Research, and Research Questions
+In this section, we introduce the formal problem definition and prior work, leading to the research questions.
+
+
+2.1    Problem Definition
+Although language models have been employed for question generation, their application in educational settings
+has only recently begun to be systematically explored with a heavy focus on the potential practical applications of
+proprietary models (e.g. GPT models’ prompt engineering and RAG applications for question generation). While existing
+research in relevant academic communities with a more technical focus explores generating questions from descriptive
+texts [22, 55], the task remains highly complex and there is less focus on the educational value of the generated questions
+in evaluations. Context plays a crucial role in the educational value of EdQG, yet much existing work has focused
+Manuscript submitted to ACM
+A Novel Approach to Scalable and Automatic Topic-Controlled Question Generation in Education                                               3
+
+
+primarily on generating questions from sentences, paragraphs, or structured data in isolation [34, 39], with limited
+attention given to topic-controlled question generation in a given context.
+   Topic-controlled question generation takes a target topic in addition to the descriptive text as context into account
+while generating the models’ outputs. On the other hand, traditional approaches which take sentences or paragraphs
+as inputs without contextual topic-control tend to generate questions that arbitrarily combine or select concepts and
+topics which are likely to be of limited practical value to professionals like teachers. From the learners’ points of view,
+prior research also suggests a strong correlation between the personalisation of testing and knowledge retention [3],
+which further supports the importance of topic-controlled question generation. Developing comprehensive, high quality
+and relevant educational question sets across different topics can significantly enhance teaching practice and support
+students through intelligent tutoring systems that provide personalised learning to diverse learners.
+   In the scope of this work, we define topic-controlled question generation (T-CQG) as follows. Let us suppose a learner
+ℓ has already consumed learning materials that contain the knowledge context 𝑐 containing various topics 𝑇𝑐 . A goal of
+a teacher or an intelligent system is then to generate a question 𝑞ˆ𝑡 , where 𝑞ˆ𝑡 is an educational question about the target
+topic 𝑡, where 𝑡 ∈ 𝑇𝑐 , and 𝑞ˆ𝑡 consists of a sequence of tokens 𝑞𝑡 ∈ {𝑤 1, . . . , 𝑤 |𝑞𝑡 | } of arbitrary length |𝑞𝑡 |. This task
+requires that the question is not only contextually relevant to the paragraph context 𝑐, but also closely aligned with the
+thematic focus defined by topic 𝑡. The probability 𝑝 (𝑞𝑡 |𝑐, 𝑡) incorporates the coherence and relevance of each token in
+the sequence, rendering the generation process highly sensitive to both the context and the topic. This task can be
+mathematically defined to identify the optimal question 𝑞ˆ𝑡 that maximises the conditional probability as per equation 1.
+
+                                                                     |𝑞𝑡 |
+                                                                     ∑︁
+                              𝑞ˆ𝑡 = arg max 𝑝 (𝑞𝑡 |𝑐, 𝑡) = arg max           log 𝑝 (𝑤𝑖 |𝑐, 𝑡, 𝑤 1 . . . 𝑤𝑖 −1 )                           (1)
+                                         𝑞𝑡                    𝑞𝑡
+                                                                     𝑖=1
+   where, 𝑝 (𝑞𝑡 |𝑐, 𝑡) denotes the conditional probability that also depends on the tokens 𝑤 ∈ 𝑞𝑡 .
+
+
+2.2   Related Work
+Question Generation (QG) involves automatically generating questions from a specific text passage or a document. The
+main goal of QG is to produce questions that are not only syntactically and semantically correct but also contextually
+relevant and meaningful for the intended use. There has been a growing use of computational models to generate
+contextually relevant and grammatically correct questions [54]. In educational contexts specifically, QG has been
+implemented in various systems including intelligent tutoring systems [56], writing support systems [46], and knowledge
+assessment platforms [36].
+   Existing research categorises QG into two types: answer-aware and answer-agnostic [59]. In answer-aware QG, the
+target answer is predetermined, and questions are generated to correspond with this answer within the given text
+context. On the other hand, answer-agnostic QG does not provide the target answer to the language model, allowing
+for more open-ended question generation which are considered to be educationally more valuable. However, answer-
+agnostic QG is a more challenging task for NLP research. Early research in answer-agnostic QG relied heavily on
+rule-based techniques that required experienced educators to develop rules that could convert declarative sentences
+into interrogative forms [1, 33]. These methods, while effective, are labour-intensive and time-consuming, demanding
+significant manual effort in creating high-quality, handcrafted rules [11], which inherently limits their scalability and
+diversity in question generation. These limitations led more recent research investigations to focus on data-driven
+neural network (NN) approaches.
+                                                                                                                  Manuscript submitted to ACM
+4                                                                                                                      Li et al.
+
+
+    Early implementations of QG practices with data-driven approaches predominantly utilized sequence-to-sequence
+(seq2seq) architectures incorporating Recurrent Neural Networks (RNNs) [22]. More recently, the focus shifted towards
+employing end-to-end techniques facilitated by deep neural networks [59]. For instance, [16] and [35] utilised GPT-2
+combined with either an attribute classifier or training another autoregressive language model to guide the generated
+text towards a topic. However, these approaches typically generated content that is too broadly categorised (such as a
+category being ’science’), failing to achieve the level of topic specificity required for them to be of real-world value for
+educational practitioners. On the other hand, a more targeted approach by [34] employing an LSTM model equipped
+with a pre-decoding mechanism, demonstrated the ability to generate questions on detailed topics. This model, though
+promising in its specificity, was only applied at the sentence level, limiting its utility for broader educational applications.
+More contemporary models leverage pre-trained transformers like GPT [5, 23] (Decoder Only) and T5 (Text-to-Text
+Transfer Transformer) [7, 53] (Endoder-Decoder). These advanced NLP approaches like transformer architectures have
+shown to be effective in generating coherent and relevant questions for specified texts [24]. However, their use in
+meaningful and relevant educational question generation needs further explorations and evaluations in educational
+contexts [7, 53]. In short, the problem of topic-specific question generation as scoped in section 2.1 has been of interest
+to multiple researchers in the past, yet it is still an open challenge for the community.
+    One of the significant challenges in research utilising pre-trained transformer architectures for the scoped problem
+is the issue of making generated content more specifically aligned with the particular topics studied and its contextual
+considerations. Previous literature in AI in Education research proposed multiple approaches when linking knowledge
+components of topics to generated learning materials such as questions. The most common approach is expert human
+labelling, but it is challenging to be scaled even though its accuracy is unmatched [57] and considered as gold-standard.
+Due to the scaling challenges of expert human labelling, recent works have also proposed methods such as entity linking
+[6, 27] that provide scalability even if it tends to sacrifice some accuracy. Another proposed approach is the so-called
+"Wikification" which is the practice of using Wikipedia as a source for semantic annotations [58]. The approach has
+demonstrated significant advancements in recent years and offers considerable potential for automatically extracting
+concepts from Wikipedia entries to generate topic-specific educational materials [9]. Additionally, since there has been
+extensive research on Wikipedia for its potential for semantic labelling of AI-generated content, its concept relatedness
+metrics that are based on its link structure, page co-occurrence etc. [47] are well developed and can represent semantic
+relatedness between Wikipedia concepts to a high accuracy. However, the use of approaches that allow scalable solutions
+such as Wikification [6] in educational question generation models is yet to be explored in detail in learning analytics.
+
+2.3   Research Questions
+This paper aims to address these challenges associated with the topic-controlled EdGQ. We conducted supervised
+fine-tuning on a pre-trained T5-small model (hereafter referred to as the T5 model), an approach that is preferable
+and safer for educational entities to manage and control the language model (LM) with minimal infrastructure costs.
+The fine-tuning process utilised the novel MixSQuAD dataset, an enrichment of the SQuAD dataset [50], which is a
+commonly used general question generation dataset characterised by its shallow questions. Additionally, we designed
+experiments to explore the impacts of pre-training strategies, text data augmentation, and model quantisation on the
+model’s performance. We evaluated the model on the novel MixKhanQ dataset, derived based on the KhanQ dataset
+[31], which features human-like, in-depth questions sourced from Khan Academy, an online education platform. This is
+designed to assess the model’s effectiveness on academic materials, and its ability to generate educationally meaningful
+questions to explore its practical value for teaching and learning contexts. Based on these steps, the paper proposes a
+Manuscript submitted to ACM
+A Novel Approach to Scalable and Automatic Topic-Controlled Question Generation in Education                               5
+
+
+novel set of models that can perform high-precision topic-controlled educational question generation (T-CQG). The
+research questions addressed through this work are as follows:
+      • RQ1: What are the most representative metrics for automated measures of generated questions on their topic
+        relevance considering human evaluations as the ground truth?
+      • RQ2: Is it feasible to fine-tune a pre-trained language model (PLM) to perform T-CQG?
+      • RQ3: Can further pre-training of the PLM on scientific text improve the quality of T-CQG?
+      • RQ4: How does model quantisation affect the performance of the fine-tuned models while improving scalability?
+      • RQ5: To what extent can data augmentation further improve the quality of T-CQG?
+
+3     Methodology
+3.1    Datasets Utilised
+We used the SQuAD 1.1, the Stanford Question Answering Dataset, comprising over 100,000 questions crafted by crowd
+workers based on a selection of 536 Wikipedia articles [50] as the source for creating new datasets (SQuAD+, MixSQuAD
+and MixSQuAD2X as described in section 3.2 below) for finetuning the models. When training the TopicQGedu Model
+(see section 3.3.3 below), we used PeS2O dataset [51], a collection of scientific abstracts, to perform the pre-training as
+prior work has shown this may increase the model’s performance in educational settings [7].
+    For evaluation, we used the KhanQ dataset [31] as it presents a more relevant challenge for educational question
+generation. It includes 1,034 high-quality questions in the STEM fields generated by learners, which aim to probe
+deep understanding of subjects taught in Khan Academy’s online courses 1 . Despite its smaller size relative to SQuAD,
+KhanQ aligns more closely with our objective to generate topic-based and relevant educational questions (as per prior
+work [26]). To adapt the dataset for topic-based evaluation, we use the same approach as MixSQuAD (section 3.2.2) to
+create a dataset with contrasting topic-based questions. We refer to the transformed version of the KhanQ dataset as
+MixKhanQ dataset.
+
+3.2    Creating Novel Datasets for T-CQG
+A core contribution of this work is to introduce a novel data enrichment method that leads to the creation of new
+datasets that are derived from conventional question generation datasets. As described in 3.1, we derive the new
+datasets from SQuAD and KhanQ. These datasets already contain the context 𝑐 and the label question 𝑞𝑡 from a human
+(contrast to 𝑞ˆ𝑡 in equation 1 which denotes the generated question). We append an additional field to the dataset, Topic
+𝑡, and create three novel datasets, 1) SQuAD+, 2) MixSQuAD, and 3) MixSQuAD2X for the T-CQG task. The process of
+generating the three datasets is presented in figure 1.
+
+3.2.1 Linking the target topic to data points, SQuAD+ dataset. To identify semantic annotations for every context and
+question, we employ wikification [45], which annotates text inputs with relevant concepts from Wikipedia (𝑇𝑐 ). We
+retain the top 5 concepts for each text (context and question) based on their PageRank scores, which reflect the authority
+of the concept over the annotated text. To make sure that we can link the topical alignment between the question and
+the context, we only retain examples where at least one common Wikipedia concept is present between the context
+and the question pair (i.e. |𝑇𝑐 ∩ 𝑇𝑞 | ≥ 1). We select the concept with the highest PageRank score in the question (most
+authoritative) as the target topic 𝑡. This method ensures that the most closely related annotation is selected as the topic
+
+1 https://www.khanacademy.org
+
+                                                                                                  Manuscript submitted to ACM
+6                                                                                                                              Li et al.
+
+
+
+
+Fig. 1. Methodology for generating the different training datasets proposed in the model from the contexts 𝑐, topics 𝑡 and target
+questions 𝑞𝑡 (shaded as label) from the SQuAD dataset is illustrated using two random examples from the dataset, example 𝑖 (green)
+and example 𝑗 (pink). The contexts 𝑐𝑖 and 𝑐 𝑗 glued together are concatenated texts treated as a single field in the dataset. The orange
+rectangles indicate the scope of the datasets while (*) marks the newly proposed datasets.
+
+
+for each pair, and confirms that the topic is appropriately aligned with both the context and the question, thus avoiding
+situations where the topic may be relevant to one but not the other. As a result, both datasets have been enhanced to
+include paragraph-level contexts 𝑐, identified topics 𝑡, and corresponding questions 𝑞𝑡 , as shown in figure 1.
+
+3.2.2 MixSQuAD dataset. We also create an enhanced dataset to synthesise a contrastive learning setting while fine-
+tuning the PLM for T-CQG leading to the MixSQuAD dataset. When creating this dataset, we randomly pick pairs
+of observations from the SQuAD+ dataset described in section 3.2.1. For each pair of examples 𝑖 and 𝑗 containing
+(𝑐𝑖 , 𝑡𝑖 , 𝑞𝑡𝑖 ) and (𝑐 𝑗 , 𝑡 𝑗 , 𝑞𝑡 𝑗 ) respectively, we create two new examples where they share a common context 𝑐𝑖 𝑐 𝑗 where
+the two contexts are concatenated. The data representation of the MixSQuAD dataset is presented in figure 1. This
+approach aims to enhance the model’s understanding of topics and the relationship between context, topic, and question
+by serving novel contrastive examples. An added benefit of the novel MixSQuAD dataset is that the context presented
+to the model during fine-tuning is guaranteed not to be previously encountered in the large corpora used for training
+foundational models. This method results in a diverse collection of 10,000 mixed data entries in the MixSQuAD dataset,
+fostering a robust learning environment for the models.
+
+3.2.3 MixSQuAD2X dataset. The MixSQuAD2X dataset is very similar to MixSQuAD dataset, but the main difference
+is the utilisation of data augmentation to expand the dataset. In contrast to MixSQuAD, we introduce two additional
+examples to the dataset with the context 𝑐 2𝑐 1 by reversing the order when concatenating the two randomly chosen
+contexts. This leads to a dataset that is twice as big as the MixSQuAD dataset.
+
+3.3    Developing T-CQG Models for Education
+With the relevant datasets created, we built multiple models to be evaluated in a series of experiments to answer the
+research questions outlined in section 2. All the models used in experiments are created by finetuning the T5-Small
+[49] model, a small Language Model (sLM) that has also been used for educational question generation in the past
+[7, 26]. We fine-tuned the foundational model (t5-small from HuggingFace library2 ) using the Adam optimizer with a
+batch size of 64, the learning rate of 1𝑒 − 3, and epsilon of 1𝑒 − 8. We use a maximum sequence length of 512 for the
+encoder, and 128 for the decoder. We train all models for a maximum of 50 epochs with an early stopping based on the
+validation loss 3 .
+2 https://huggingface.co/google-t5/t5-small
+3 https://github.com/Cathgy/Topic-controllable-Question-Generator.git
+
+Manuscript submitted to ACM
+A Novel Approach to Scalable and Automatic Topic-Controlled Question Generation in Education                               7
+
+
+3.3.1 Baseline Model to Answer RQ2. We conducted fine-tuning for T-CQG using the same finetuning approach used
+by [42] for controlling complexity in simplifying texts. We used the proposed SQuAD+ dataset (described in section
+3.2.1) to finetune the T5 PLM.
+
+3.3.2 TopicQG to Answer RQ2. The key difference between the baseline model and the proposed TopicQG model lies
+in the data used for fine-tuning the T5-small model. We introduced the TopicQG model to contrastive examples using
+the novel dataset created, MixSQuAD (described in section 3.2.2). Such mixed contexts, which may feature sentences
+with vastly differing concepts, are designed to enhance the T5 model’s understanding of the semantic relationships
+between context 𝑐, topic 𝑡, and question 𝑞𝑡 .
+
+3.3.3 TopicQGedu to Answer RQ3. Further refining the approach, we developed TopicQGedu, which incorporates an
+additional pre-training step. In this approach, the sLM model undergoes further training with scientific text documents
+before being fine-tuned. This step is intended to imbue the model with scientific terminology and concepts, crucial for
+crafting high-quality educational questions [7].
+
+3.3.4 Quantised TopicQG Models to Answer RQ4. Quantisation allows reducing the memory footprint of neural models
+significantly to enhance their scalability. To evaluate the degree of loss due to quantising the trained models, we created
+the quantised versions of the TopicQG model. We used 8-bit quantisation utilising the LLM.int8 algorithm [18] and
+4-bit precision employing the QLoRa algorithm [19] to create TopicQG8bit and TopicQG4bit models respectively.
+
+3.3.5 TopicQG2X to Answer RQ5. This model is trained similarly to the Topic QG model, but it exploits data augmentation
+by being finetuned on the newly proposed MixSQuAD2X dataset (described in section 3.2.3). The MixSQuAD2X dataset
+effectively doubles its size by changing the order of concatenation of contexts, introducing new examples to finetune the
+model with. This strategy has the potential to enhance the model’s robustness and generalisation abilities, improving
+the relevance and educational value of the generated questions to the given topics.
+
+3.3.6 Example Questions Generated with Models for the Experiments. Table 1 presents a random set of topic-controlled
+question generations based on the context text provided in five different subject areas (Computing, Economics, Chemistry,
+Art, and Biology).
+
+
+3.4   Human Annotation-based Evaluation of Semantic Relatedness Metrics
+To assess how representative BERTScore and WikiSemRel are when measuring topical relatedness (RQ1). We created
+a small gold-standard dataset via human annotation. The annotators (n = 4) consisted of two female and two male
+postgraduate students in the 20-30 age bracket from a masters degree programme at a university in the UK.
+  To set up the annotation task, we randomly selected 30 questions from the MixKhanQ dataset (KhanQ dataset
+transformed using the method described in section 3.2.2). For each sample, we provided the participants with the reference
+question 𝑞𝑡 and two corresponding generated questions, 1) the question 𝑞ˆ𝑡 generated using the relevant/prescribed
+topic and 2) the question 𝑞ˆ𝑡 ′ generated with an alternative topic. Annotators were required to independently determine
+which of the two generated questions 𝑞ˆ𝑡 or 𝑞ˆ𝑡 ′ is more closely aligned with the reference question𝑞𝑡 , the same tasks
+the SemRel metrics are going to do. The generated question 𝑞ˆ (·) annotators selected as closely relevant to the reference
+question is given 1 and the other 0. We calculated the Mean Absolute Error (MAE) between the mean score assigned by
+human annotators and the respective SemRel Score as per equation 2.
+                                                                                                  Manuscript submitted to ACM
+8                                                                                                                                  Li et al.
+
+          Table 1. A Sample of Randomly Selected Generations from the TopicQG Model for Different Subject Domains
+
+
+
+
+                                     Í
+                                                     ˆ − SemRel(𝑞)|
+                                       𝑞ˆ ∈𝑄 | Human(𝑞)         ˆ
+           MAE(Human, SimRel) =                                         where 𝑄 ∈ {𝑞𝑡1, 𝑞𝑡1′ , 𝑞𝑡2, 𝑞𝑡2′ , . . . , 𝑞𝑡30, 𝑞𝑡30′ }         (2)
+                                                    |𝑄 |
+
+3.5   Experimental Setup for Automated Performance Evaluations
+Figure 2 illustrates the experimental setup designed to address RQs 2-5. A total of six models (including TopicQG’s base,
+8bit, and 4bit versions) have been developed as described in detail in section 3.3 and represented as coloured boxes in
+figure 2. Each model is evaluated using the MixKhanQ dataset.
+
+3.6   Evaluation Metrics
+When evaluating the final models, we focused on two main aspects. 1) The generated question 𝑞ˆ𝑡 is of high linguistic
+quality so it has the potential to be used in educational settings, 2) The generated question 𝑞ˆ𝑡 is semantically related to
+the prescribed topic 𝑡 so that it can address the AI-generated questions’ common problem of being "too general to be
+useful in practice" in educational settings.
+
+3.6.1 Evaluating the quality of generations. To assess the quality of the generated questions, the similarity between
+the reference question and the generated question is measured. We employed a suite of metrics, including BLEU [43],
+Manuscript submitted to ACM
+A Novel Approach to Scalable and Automatic Topic-Controlled Question Generation in Education                                    9
+
+
+
+
+Fig. 2. Methodology for training and evaluating the Baseline model (black), TopicQGedu model (green, RQ3), TopicQG model (dark
+red, RQ2), its post-training quantised counterparts, TopicQG8bit model(medium red, RQ4), TopicQG4bit model(light red, RQ4) and
+TopicQG2X model (blue, RQ5). The numbered circles indicate different experimental pathways that test different research questions.
+The shaded grey box indicates that the T5-Small model was available pre-trained prior to the experiments while the non-shaded
+models contained parameters trained during the experiments.
+
+
+
+
+METEOR[4], ROUGE [38], F1 score, and Perplexity[32], which have been used frequently in previous research [7].
+These metrics provide a comprehensive evaluation of the fluency, relevance, and coherence of the generated questions,
+serving as scalable indicators of the automated evaluation of the generated questions’ quality.
+
+3.6.2 Semantic relatedness between the questions generated and the topic. For measuring the semantic relatedness,
+𝑆𝑒𝑚𝑅𝑒𝑙 (𝑞𝑡 , 𝑞ˆ𝑡 ), we needed metrics that can quantify the relatedness between the reference question 𝑞𝑡 and the generated
+question 𝑞ˆ𝑡 . We used the BERTScore [60] and the Wikipedia-based Topic Semantic Relatedness (WikiSemRel) [27]
+metrics for these evaluations.
+
+    BERTScore. leverages BERT contextual embeddings of tokens to calculate the similarity between two text extracts,
+improving upon the traditional exact match methods. Our early experiments showed that the BERTSCore tend to inflate
+the similarity between 𝑞𝑡 and 𝑞ˆ𝑡 , as there are words like "what" and "why" that overlap even if the generated question is
+not about the salient topic 𝑡 of the reference question. Therefore, we excluded stopwords in the reference and generated
+questions prior to calculating the BERTScore. BERTSCore is a score in the range (0,1) where 0 indicates no relatedness.
+
+    WikiSemRel. quantifies the semantic relatedness between the Wikipedia-based concepts extracted from the reference
+question 𝑞𝑡 and the generated question 𝑞ˆ𝑡 . We employ the WAT API [45] service to calculate semantic relatedness using
+the 1) w2v-based method, that builds embeddings for Wiki entities based on their co-occurrence in Wikipedia pages and
+2) Jaccard-based measure, that uses the outward links to other Wikipedia pages to calculate similarity [47]. We Wikify
+the generated question to compute the WikiSemRel score which is within range (0,1) where 0 indicates no relatedness.
+
+4   Results
+In this section, we present the results from the experiments described in section 3. The results of the human evaluations
+answering RQ1 is presented in table 2. The offline evaluations to validate RQ 2-5 following the methodology illustrated
+                                                                                                       Manuscript submitted to ACM
+10                                                                                                                               Li et al.
+
+
+in figure 2 are summarised in tables 3 and 4. While table 3 presents metrics relating to the linguistic quality of the
+generation, Table 4 presents the semantic closeness between the prescribed topic and the generated questions. The
+perplexity calculation in table 3 is done using the TextDescriptives python library with the en_core_web_lg language
+model as the reference language distribution [32].
+
+Table 2. Alignment between human annotation and Semantic Relatedness (SemRel) scores. The best performance and the next best
+for each metric is highlighted in bold and italic.
+
+
+                                                               BERT      WikiSemRel        WikiSemRel
+                                                                Score        (w2v)           (Jaccard)
+                               MAE(Human, SemRel) ↓             0.48          0.36              0.23
+
+
+Table 3. Evaluation metrics relating to the quality of the questions generated by the models proposed in section 3.3 based on the
+MixKhanQ dataset. The best performance and the next best for each metric is highlighted in bold and italic.
+
+      Model/Metric     BLEU1↑       BLEU2↑      BLEU3↑       BLEU4↑       F1 Score↑     METEOR↑          Perplexity↓    ROUGE-L↑
+      Baseline          0.519        0.316       0.216        0.175         0.319        0.216             1.303          0.207
+      TopicQGedu        0.551        0.335       0.221        0.177         0.302        0.216              1.360         0.204
+      TopicQG           0.551        0.343       0.236        0.191         0.330        0.233              1.323         0.230
+               8bit     0.546        0.339       0.231        0.186         0.319         0.226             1.327         0.225
+               4bit     0.543        0.337       0.231        0.186         0.318        0.223              1.334         0.223
+      TopicQG2X         0.536        0.328       0.221        0.177         0.321        0.220              1.345         0.216
+
+
+
+4.1    Most Representative Automated Topic Relevance Metric to Human Evaluations (RQ1)
+In human evaluations of the 30 randomly selected question pairs for topical alignment, only two pairs did not reach
+a consensus among the participants with one outlier in each case (with the Fleiss’ kappa [28] measure of inter-rater
+agreement among multiple raters being 0.933). This indicates strong inter-rater reliability in the gold-standard human
+evaluator data. As per table 2, the WikiSimRel metrics are more aligned with the human judgements in comparison to
+the BERTScore. Among the three candidates, we can observe the embedding based (BERT and w2v) methods showing
+inferior representativeness. This could be due to the fact that embeddings can represent many different attributes about
+the entities and tokens they represent (e.g. whether the text is a question or a statement). This hypothesis is further
+reinforced by previous observations that including stopwords like "what", "why" leads to the inflation of BERTScore.
+
+Table 4. Semantic relatedness between the generated questions 𝑞ˆ on (i) prescribed topic 𝑡 vs. (i) alternative topic 𝑡 ′ and the reference
+question on the prescribed topic 𝑞𝑡 . The best performance and the next best for each metric is highlighted in bold and italic.
+
+                                                    BERTScore                       WikiSimRel (Jaccard)
+                                           𝑞ˆ𝑡 ↑    𝑞ˆ𝑡 ′ ↓ Difference ↑        𝑞ˆ𝑡 ↑   𝑞ˆ𝑡 ′ ↓ Difference ↑
+                        Baseline          0.859     0.859       0.000          0.615 0.070          0.545
+                        TopicQGedu        0.855     0.831       0.024          0.721 0.185          0.536
+                        TopicQG           0.859     0.830       0.029          0.727 0.132          0.595
+                                 8bit     0.858     0.831       0.027          0.693 0.142          0.551
+                                 4bit     0.858     0.831       0.027          0.686 0.157          0.529
+                        TopicQG2X         0.859     0.823      0.036           0.735 0.055         0.680
+Manuscript submitted to ACM
+A Novel Approach to Scalable and Automatic Topic-Controlled Question Generation in Education                              11
+
+
+However the Jaccard WikiSimRel score that relies exclusively on outward links from Wikipedia pages tends to capture
+a better representation of the informational and thematic content leading to better alignment.
+
+4.2   Topical Relevance and the Effect of Pre-training on Generated Questions (RQ 2 and RQ 3)
+Table 3 provides us an indication of the degree to which the generated question 𝑞ˆ𝑡 resembles the reference question 𝑞𝑡 .
+This is a proxy for topical relevance as the reference question is implicitly aligned with the controlled topic. The results
+indicate that the proposed TopicQG model outperforms the baseline model in all but perplexity metric. Outperforming
+in terms of BLEU scores at multiple levels (BLEU1 through BLEU4), indicates enhanced linguistic precision in question
+generation. It also achieves higher F1, ROUGE-L, and METEOR scores, reflecting the model’s capability to generate
+questions that are not only relevant and accurate but also semantically aligned with reference texts. Compared with the
+baseline, a slight increase in perplexity suggests that the TopicQG model may generate questions that diverge from
+the reference language, potentially due to its ability to learn more complex educational expressions. The perplexity
+does not raise significant concerns over the quality of generations as the random examples in table 1 doesn’t indicate
+visible signs of deterioration. It is noteworthy that the randomly selected examples in table 1 are not as good as typical
+questions generated using a very large language model such as ChatGPT. We hypothesise the size of our model being
+a main reason for the relatively low quality of generations. However, our own prior work has also shown that such
+generations can be improved to humanly acceptable levels by simply post-processing them through a pre-trained
+grammar correction model [25, 26] retaining the accessibility and sustainability benefits of sLMs.
+  Table 4, the stronger indicator of topic alignment gives us evidence that the proposed TopicQG models significantly
+outperform the baseline. In terms of the semantic difference between the educational questions generated with the
+controlled topic vs. a different topic (using WikiSimRel (Jaccard), the most representative metric from table 2), all newly
+proposed models except the 4bit quantised TopicQG model outperforms the baseline. This can be expected as extreme
+quantisation can deteriorate the accuracy of the model.
+  In terms of the TopicQGedu model that is pre-trained on scientific text, the results are mixed and more difficult
+to interpret. While it surpasses the predictive performance on the Baseline in a few metrics, it performs below the
+TopicQG model across all metrics in table 3. While pre-training on scientific content is hypothesised to improve
+the topical relevance of the model, we do not observe improvements in this case. To rigorously assess whether the
+observed differences in performance metrics are statistically significant, we alsoconducted a paired t-test comparing
+the performance scores of TopicQGedu and TopicQG across the same set of questions. The results yielded a p-value of
+0.083 (>0.05), suggesting that there is no statistically significant difference that TopicQGedu underperforms compared
+to TopicQG. Given that the T5 model is primarily trained on web-crawled data and Wikipedia articles [49], the absence
+of scientific texts in the training corpus could potentially weaken the model’s performance in scientific concepts and
+language. Thus pre-training strategies may need to be further explored, especially in specialized domains where deeper
+domain knowledge might be crucial, even if immediate improvements in conventional metrics are not evident.
+
+4.3   Impact of Model Quantisation (RQ4) and Data Augmentation (RQ5)
+We investigated the effects of 8-bit and 4-bit quantisation on the TopicQG model (the best-performing model on the
+MixSQuAD dataset), referred to as TopicQG8bit and TopicQG4bit respectively. In comparison to the TopicQG model,
+the quantised models retain best performance with respect to metrics such as BLEU, F1-Score, MATEOR and ROUGE-L
+with very minor decreases (≤ 0.01) according to table 3. As expected, a drop in performance in comparison to the
+TopicQG model (with no quantisation) is observed. Similarly in table 4), a small drop in metrics is observed although it
+                                                                                                  Manuscript submitted to ACM
+12                                                                                                                   Li et al.
+
+
+is not a drastic difference. This can be attributed to the fact that the generations change to a very small degree with
+quantisation indicated by the small deviations in table 3.
+     Regarding memory usage, the full-precision TopicQG model occupies a memory size of ≈ 230 MB. In contrast, the
+TopicQG8bit model significantly reduces this footprint to ≈ 110 MB (59%), and the TopicQG4bit model further reduces
+it to ≈ 94 MB (53%). The potential of quantisation demonstrated in this study is twofold: 1) it significantly lowers
+the hardware requirements for running the models, and 2) it maintains a satisfactory level of performance, making it
+feasible to deploy educational topic-controllable question generation on platforms where computational resources are
+limited. This accessibility could dramatically widen the applications of such models, making them more ubiquitous
+in educational and other real-time interactive applications on mobile devices. The reduction in model size not only
+implies lower memory requirements but also suggests lower power consumption, leading to cheaper infrastructure
+costs and a lower carbon footprint. Such properties are crucial for deploying these models in educational contexts of
+resource-constrained environments such as middle and low-income countries, mobile devices and embedded systems.
+     The comparisons between TopicQG and TopicQG2X models in table 4 show that the data augmentation has an
+obvious effect on improving the models performance on topical relevance. The greater diversity of examples where the
+same example is presented to the model in two different ways helps the model better understand to follow the topical
+theme prescribed in the instruction with the context. It surpasses all other models, including TopicQG, demonstrating
+superior alignment of the generated questions with the input context and topic. This highlights the effectiveness of
+data augmentation in enhancing the model’s capacity to generate questions with topic relevance and better contextual
+consideration of texts.
+
+5     Discussion
+This paper tackled the challenge of topic-based educational question generation with a high degree of specificity.
+Due to the novelty of the task itself, we evolved our method over multiple steps to propose a method that can lead
+to high-quality T-CQG while validating novel approaches to evaluate the topical relevance of such generations. The
+results show that the novel method proposed and evaluated here is capable of generating topical educational questions
+while retaining coherent grammatical structure. Further experiments also showed how data augmentation increases the
+model’s performance in topical relevance leading to improved results. The final experiments exploring quantisation
+indicate that the model’s memory footprint can be halved with minimal loss of generative performance. Supported
+by human evaluation, the findings provide solid evidence that the questions generated by the proposed model are of
+high quality and meaningfully related to the educational content and topics, thereby affirming the effectiveness of our
+topic-controllable educational question generator.
+     Similar to trends in educational research in general [17], the interest in the use of Generative Artificial Intelligence
+(GenAI) in LA research community has significantly increased in recent years. Regarding content generation, LLMs are
+used in tackling challenges such as grammar/ code correction [13, 20], question generation [23, 26], explanations and
+hints provision [37, 44], in STEM subjects such as mathematics [2, 12] and science [7, 23, 41] to non-STEM domains like
+law [14] and language learning [10]. Nevertheless, the majority of the community resorts to in-context learning [21]
+within enormous LLMs such as ChatGPT [17]. For instance, there are increasing numbers of attempts of topic-controlled
+EdQG relying on Model-as-a-Service (MaaS) products that use externally hosted LLMs like ChatGPT (e.g. [23]). While
+practically valuable to varying degrees of success, these approaches introduce significant privacy, ethics, and governance
+challenges [30]. The extensive costs associated with the training and deployment of these models on-premise also make
+them impractical for educational stakeholders from both operational and financial perspectives [26].
+Manuscript submitted to ACM
+A Novel Approach to Scalable and Automatic Topic-Controlled Question Generation in Education                             13
+
+
+  We argue that over-reliance on such commercial models in academic research is a threat to academic independence
+and encourages alternative investigations to address significant challenges of education. The novel approach proposed
+in this paper provides significant opportunities to enhance the applicability of language models in educational contexts
+for question generation without the limitations posed by approaches relying on externally hosted LLMs like ChatGPT.
+The model proposed here has the potential to be scaled at a minimal cost in a safe and ethical manner and can be utilised
+to generate questions that are closely aligned with the specific content of educational materials. The 4-bit quantisation
+described reduces the model size to 94.41 MB while preserving essential performance, showcasing its potential for
+widespread use in resource-limited educational scenarios such as mobile devices and embedded systems. Therefore, the
+model has the potential for decreasing teachers workload on question generation in diverse contexts as well as being
+utilised in LMSs and ITSs to facilitate personalised learning experiences, allowing educational questions posed to be
+customised to meet the unique needs and interests of each learner (such as a learner model [48]).
+
+5.1   Implications of the Results for Research and Practice
+Regarding educational practice, the proposed topic-controlled question generating model can be useful for different
+tasks within the education domain. Primarily, we see such a tool as a teacher assistant tool to propose questions to
+teachers to select from. Such a tool would keep teachers in the loop as final decision makers but help them with tasks
+such as generating topic-specific, relevant, and age-appropriate questions for teaching. As discussed in the introduction,
+these tasks have long been identified as time-intensive tasks for teachers [30]. We envision tools where a teacher can
+point the system to a video, a presentation or a collection of learning resources where the system will automatically
+detect numerous salient topics and present them to the teacher as potential educational questions and the draft of a
+new quiz can be created in a matter of few clicks. This approach has the potential to change the degree of formative
+assessment due to decreased workload and can further stimulate well-anticipated innovation in education systems [40].
+We argue that the model proposed and evaluated here has the potential to decrease teachers’ workload on such tasks.
+  Second, the model can be integrated into multiple roles within the learning analytics infrastructures. The key to a
+precise learner state representation is having precise tests that can verify skill mastery of individuals at finer grain.
+The proposed method can lead to tools that can generate high-precision assessments within a personalised learning
+management system that can feed better data into learning analytics. While investing significant resources to create a
+relatively high coverage question banks is still feasible for short course and MOOC platforms that focus on narrow
+scopes of knowledge, as the world is gradually moving towards informal, lifelong learning such an investment would
+be infeasible. Models such as the one proposed here can play a critical role for continuous topic-specific, high quality
+and relevant question generation in educational systems.
+  Third, the model can also bring efficiencies to the implementation of question generation in mobile and resource
+scarce contexts. As we are dealing with very small models, systems built on these models are scalable with minimal
+costs and has the potential to run on mobile devices without having to connect to the Internet. These considerations
+are of utmost importance for more equitable use of AI in Education [8].
+  Regarding LA and AI in Education research in general, the methodology proposed in this work can be extended
+to other forms of generation such as feedback, explanations, and content summaries in education. Also, aspects that
+that go beyond topical relevance (such as linguistic complexity and cognitive load etc.) can be controlled in future
+explorations to further advance learning analytics systems paving the way to re-imagining the limits of personalised
+learning material generation with AI. Furthermore, existing research either ignores the evaluation of whether the
+generated questions truly respond to the controlled conditions, or relies on extensive manual scoring by humans,
+                                                                                                 Manuscript submitted to ACM
+14                                                                                                                                               Li et al.
+
+
+which is both time-consuming and labour-intensive [57]. Experimental studies with human participants presented here
+indicate that the "relatedness score" has the potential to serve as a robust evaluation metric for assessing the semantic
+relatedness of generated questions to the input text, particularly in educational question generation tasks. It appears
+to excel in distinguishing between different concepts within the same academic field, making it particularly relevant
+for educational question generation tasks. As educational content generation research increases in LA literature, the
+importance of evaluation metrics of such content becomes even more important and the findings of this paper can help
+researchers consider appropriate metrics.
+
+6    Conclusion
+This paper proposes a novel approach to fine-tuning pre-trained sLMs to effectively address the challenge of generating
+topic-controllable questions based on paragraph-level context within educational settings. In addition, a novel method to
+synthesise training data for this task is presented with a novel Wikipedia concept-based evaluation method. The results
+show that the model proposed here has the potential to decrease teacher workload and improve personalised learning
+platforms also proving the effectiveness of training data. The model can also be scaled financially and operationally at a
+minimal cost to decrease academic researchers’ over-reliance on commercial LLMs like ChatGPT.
+     This study, while advancing topic-controllable question generation in education, acknowledges several limitations.
+The limited human evaluation sample size hinders the statistical power of our findings about the semantic relatedness
+metrics although the extremely high inter-annotator agreement improves reliability of the result. More extensive human
+annotations would strengthen the results further. While we demonstrate the proposed novel method that randomly
+pairs contexts enabling the model T-CQG performance to improve, different pairing strategies that respect the subject
+domain, subtopics, difficulty level etc. can also lead to more effective training sets and should be explored in future
+studies. Finally, while the proposed method can be used to train the pre-trained model to contextualise generations to
+topical relevance, it focuses on topical relevance only. However, how to incorporate multiple aspects in addition to
+topical relevance such as linguistic complexity and generation length (e.g. short question) together should be explored
+in the future.
+
+Acknowledgments
+This work is funded by the European Commission-funded projects "Humane AI" (Grant No. 820437) and "X5GON"
+(Grant No. 761758). This research is also part of the Teacher-AI Complementarity (TaiCo) project funded by the European
+Commission’s Horizon Program (Project ID: 101177268).
+
+References
+ [1] Derek Adamson, Deepak Bhartiya, Baljeet Gujral, Ritu Kedia, Ankit Singh, and Carolyn P. Rose. 2013. Automatically Generating Discussion
+     Questions. In Proceedings of the International Conference on Artificial Intelligence in Education (AIED).
+ [2] Aida Amini, Saadia Gabriel, Peter Lin, Rik Koncel-Kedziorski, Yejin Choi, and Hannaneh Hajishirzi. 2019. Mathqa: Towards interpretable math word
+     problem solving with operation-based formalisms. arXiv preprint arXiv:1905.13319 (2019).
+ [3] H. P. Bahrick, L. E. Bahrick, A. S. Bahrick, and P. E. Bahrick. 1993. Maintenance of foreign language vocabulary and the spacing effect. Psychological
+     Science 4, 5 (1993), 316–321.
+ [4] S. Banerjee and A. Lavie. 2005. METEOR: An automatic metric for MT evaluation with improved correlation with human judgments. In ACL
+     Workshop on Intrinsic and Extrinsic Evaluation Measures for Machine Translation and/or Summarization. 65–72.
+ [5] Ariel Blobstein, Daniel Izmaylov, Tal Yifat, Michal Levy, and Avi Segal. 2023. Angel: A New Generation Tool for Learning Material based Questions
+     and Answers. In Proc. of the NeurIPS Workshop on Generative AI for Education (GAIED).
+ [6] Janez Brank, Gregor Leban, and Marko Grobelnik. 2017. Annotating Documents with Relevant Wikipedia Concepts. In Proc. of Slovenian KDD
+     Conference on Data Mining and Data Warehouses (SiKDD).
+Manuscript submitted to ACM
+A Novel Approach to Scalable and Automatic Topic-Controlled Question Generation in Education                                                                15
+
+
+ [7] Sahan Bulathwela, Hamze Muse, and Emine Yilmaz. 2023. Scalable educational question generation with pre-trained language models. In International
+     Conference on Artificial Intelligence in Education. Springer, 327–339.
+ [8] Sahan Bulathwela, María Pérez-Ortiz, Catherine Holloway, Mutlu Cukurova, and John Shawe-Taylor. 2024. Artificial intelligence alone will not
+     democratise education: On educational inequality, techno-solutionism and inclusive tools. Sustainability 16, 2 (2024), 781.
+ [9] Sahan Bulathwela, María Pérez-Ortiz, Emine Yilmaz, and John Shawe-Taylor. 2021. Semantic TrueLearn: using semantic knowledge graphs in
+     recommendation systems. arXiv preprint arXiv:2112.04368 (2021).
+[10] Andrew Caines, Luca Benedetto, Shiva Taslimipoor, Christopher Davis, et al. 2023. On the application of large language models for language
+     teaching and assessment technology. arXiv preprint arXiv:2307.08393 (2023).
+[11] Feng Chen, Jiayuan Xie, Yi Cai, Tao Wang, and Qing Li. 2021. Difficulty-Controllable Visual Question Generation. In Proc. Web and Big Data:
+     International Joint Conference. Springer-Verlag, 332–347.
+[12] Karl Cobbe, Vineet Kosaraju, Mohammad Bavarian, Mark Chen, Heewoo Jun, Lukasz Kaiser, Matthias Plappert, Jerry Tworek, Jacob Hilton, Reiichiro
+     Nakano, et al. 2021. Training verifiers to solve math word problems. arXiv preprint arXiv:2110.14168 (2021).
+[13] Teodor-Mihai Cotet, Stefan Ruseti, and Mihai Dascalu. 2020. Neural grammatical error correction for romanian. In 2020 IEEE 32nd International
+     Conference on Tools with Artificial Intelligence (ICTAI). IEEE, 625–631.
+[14] Jiaxi Cui, Zongjian Li, Yang Yan, Bohua Chen, and Li Yuan. 2023. Chatlaw: Open-source legal large language model with integrated external
+     knowledge bases. arXiv preprint arXiv:2306.16092 (2023).
+[15] Mutlu Cukurova, Xin Miao, and Richard Brooker. 2023. Adoption of artificial intelligence in schools: unveiling factors influencing teachers’
+     engagement. In International conference on artificial intelligence in education. Springer, 151–163.
+[16] Sumanth Dathathri, Andrea Madotto, Janice Lan, Jane Hung, Eric Frank, Piero Molino, Jason Yosinski, and Rosanne Liu. 2020. Plug and Play
+     Language Models: A Simple Approach to Controlled Text Generation. In International Conference on Learning Representations. https://openreview.
+     net/forum?id=H1edEyBKDS
+[17] Paul Denny, Sumit Gulwani, Neil T. Heffernan, Tanja Käser, Steven Moore, Anna N. Rafferty, and Adish Singla. 2024. Generative AI for Education
+     (GAIED): Advances, Opportunities, and Challenges. arXiv:2402.01580 [cs.CY] https://arxiv.org/abs/2402.01580
+[18] Tim Dettmers, Mike Lewis, Younes Belkada, and Luke Zettlemoyer. 2022. LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale. arXiv
+     preprint arXiv:2208.07339 (2022).
+[19] Tim Dettmers, Artidoro Pagnoni, Ari Holtzman, and Luke Zettlemoyer. 2023. QLora: Efficient Fine-Tuning of Quantized LLMs. arXiv preprint
+     arXiv:2305.14314 (2023).
+[20] Tung Do Viet and Konstantin Markov. 2023. Using Large Language Models for Bug Localization and Fixing. In 2023 12th International Conference on
+     Awareness Science and Technology (iCAST). IEEE, 192–197.
+[21] Qingxiu Dong, Lei Li, Damai Dai, Ce Zheng, Zhiyong Wu, Baobao Chang, Xu Sun, Jingjing Xu, and Zhifang Sui. 2022. A survey on in-context
+     learning. arXiv preprint arXiv:2301.00234 (2022).
+[22] Xinya Du, Junru Shao, and Claire Cardie. 2017. Learning to Ask: Neural Question Generation for Reading Comprehension. In Proc. Annual Meeting
+     of the Association for Computational Linguistics. 1342–1352.
+[23] Sabina Elkins, Ekaterina Kochmar, Jackie CK Cheung, and Iulian Serban. 2024. How Teachers Can Use Large Language Models and Bloom’s
+     Taxonomy to Create Educational Quizzes. In Proceedings of the AAAI Conference on Artificial Intelligence, Vol. 38. 23084–23091.
+[24] Said Al Faraby, Ade Romadhony, and Adiwijaya. 2024. Analysis of LLMs for educational question classification and generation. Computers and
+     Education: Artificial Intelligence 7 (2024), 100298. https://doi.org/10.1016/j.caeai.2024.100298
+[25] Fares Fawzi, Sadie Amini, and Sahan Bulathwela. [n. d.]. Small Generative Language Models for Educational Question Generation. In Proc. of the
+     NeurIPS Workshop on Generative AI for Education (GAIED).
+[26] F. Fawzi, S. Balan, M. Cukurova, E. Yilmaz, and S. Bulathwela. 2024. Towards Human-Like Educational Question Generation with Small Language
+     Models. In Artificial Intelligence in Education. Posters and Late Breaking Results, Workshops and Tutorials, Industry and Innovation Tracks, Practitioners,
+     Doctoral Consortium and Blue Sky, Vol. 2150. Springer, Cham.
+[27] Paolo Ferragina and Ugo Scaiella. 2010. TAGME: on-the-fly annotation of short text fragments (by wikipedia entities). In Proceedings of the 19th
+     ACM International Conference on Information and Knowledge Management (Toronto, ON, Canada) (CIKM ’10). Association for Computing Machinery,
+     New York, NY, USA, 1625–1628. https://doi.org/10.1145/1871437.1871689
+[28] Joseph L. Fleiss. 1971. Measuring nominal scale agreement among many raters. Psychological Bulletin 76, 5 (1971), 378–382.
+[29] Department for Education. 2024. Use Cases for Generative AI in Education: User Research Report. Technical Report. Department for Education, UK
+     Government. https://www.gov.uk/government/publications/generative-ai-in-education-user-research-and-technical-report Accessed: 2024-09-21.
+[30] Michail Giannakos, Roger Azevedo, Peter Brusilovsky, Mutlu Cukurova, Yannis Dimitriadis, Davinia Hernandez-Leo, Sanna Järvelä, Manolis
+     Mavrikis, and Bart Rienties. 2024. The promise and challenges of generative AI in education. Behaviour & Information Technology (2024), 1–27.
+[31] Huanli Gong and Hengchang Pan, Liangming andHu. 2022. KHANQ: A Dataset for Generating Deep Questions in Education. In Proceedings of the
+     29th International Conference on Computational Linguistics.
+[32] Lasse Hansen, Ludvig Renbo Olsen, and Kenneth Enevoldsen. 2023. TextDescriptives: A Python package for calculating a large variety of metrics
+     from text. Journal of Open Source Software 8, 84 (April 2023), 5153. https://doi.org/10.21105/joss.05153
+[33] Michael Heilman and Noah A. Smith. 2010. Good question! Statistical ranking for question generation. In Proceedings of the Human Language
+     Technology Conference and the North American Chapter of the Association for Computational Linguistics (HLT-NAACL).
+                                                                                                                               Manuscript submitted to ACM
+16                                                                                                                                              Li et al.
+
+
+[34] Wenpeng Hu, Bing Liu, Rui Yan, Dongyan Zhao, and Jinwen Ma. 2018. Topic-Based Question Generation. In International Conference on Learning
+     Representations. ICLR 2018 Conference Blind Submission. Invite to Workshop Track.
+[35] Muhammad Khalifa, Hady Elsahar, and Marc Dymetman. 2021. A Distributional Approach to Controlled Text Generation. In International Conference
+     on Learning Representations. https://openreview.net/forum?id=jWkw45-9AbL
+[36] Bor-Chen Kuo, Frederic TY Chang, and Zong-En Bai. 2023. Leveraging LLMs for Adaptive Testing and Learning in Taiwan Adaptive Learning
+     Platform (TALP).. In Workshop on Empowering Education with LLMs at AIED. 101–110.
+[37] Hai Li, Chenglu Li, Wanli Xing, Sami Baral, and Neil Heffernan. 2024. Automated Feedback for Student Math Responses Based on Multi-Modality
+     and Fine-Tuning. In Proceedings of the 14th Learning Analytics and Knowledge Conference. 763–770.
+[38] C. Y. Lin. 2004. ROUGE: A package for automatic evaluation of summaries. In Workshop on Text Summarization Branches Out.
+[39] L. E. Lopez, D. K. Cruz, J. C. B. Cruz, and C. Cheng. 2021. Simplifying Paragraph-level Question Generation via Transformer Language Models. In
+     Proceedings of the PRICAI 2021: Trends in Artificial Intelligence (8–12 November 2021). Hanoi, Vietnam.
+[40] Rosemary Luckin and Mutlu Cukurova. 2019. Designing educational technologies in the age of AI: A learning sciences-driven approach. British
+     Journal of Educational Technology 50, 6 (2019), 2824–2838.
+[41] Kamil Malinka, Martin Peresíni, Anton Firc, Ondrej Hujnák, and Filip Janus. 2023. On the educational impact of chatgpt: Is artificial intelligence
+     ready to obtain a university degree?. In Proceedings of the 2023 Conference on Innovation and Technology in Computer Science Education, Vol. 1. 47–53.
+[42] Louis Martin, Éric Villemonte de La Clergerie, Benoît Sagot, and Antoine Bordes. 2020. Controllable Sentence Simplification. In LREC 2020 - 12th
+     Language Resources and Evaluation Conference. Marseille, France. https://inria.hal.science/hal-02678214
+[43] K. Papineni, S. Roukos, T. Ward, and W.J. Zhu. 2002. BLEU: a method for automatic evaluation of machine translation. In Proceedings of the 40th
+     annual meeting on association for computational linguistics. Association for Computational Linguistics, 311–318.
+[44] Zachary A Pardos and Shreya Bhandari. 2023. Learning gain differences between ChatGPT and human tutor generated algebra hints. arXiv preprint
+     arXiv:2302.06871 (2023).
+[45] Francesco Piccinno and Paolo Ferragina. 2014. From TagME to WAT: a new entity annotator. In Proceedings of the First International Workshop on
+     Entity Recognition & Disambiguation (ERD ’14). Association for Computing Machinery, 55–62. https://doi.org/10.1145/2633211.2634350
+[46] Gustavo Pinto, Isadora Cardoso-Pereira, Danilo Monteiro, Danilo Lucena, Alberto Souza, and Kiev Gama. 2023. Large language models for education:
+     Grading open-ended questions using chatgpt. In Proceedings of the XXXVII Brazilian Symposium on Software Engineering. 293–302.
+[47] Marco Ponza, Paolo Ferragina, and Soumen Chakrabarti. 2020. On Computing Entity Relatedness in Wikipedia, with Applications. Knowledge-Based
+     Systems 188 (2020).
+[48] Yuxiang Qiu, Karim Djemili, Denis Elezi, Aaneel Shalman Srazali, María Pérez-Ortiz, Emine Yilmaz, John Shawe-Taylor, and Sahan Bulathwela. 2024.
+     A Toolbox for Modelling Engagement with Educational Videos. In Proceedings of the AAAI Conference on Artificial Intelligence, Vol. 38. 23128–23136.
+[49] Colin Raffel, Noam Shazeer, Adam Roberts, Katherine Lee, Sharan Narang, Michael Matena, Yanqi Zhou, Wei Li, and Peter J. Liu. 2022. Exploring the
+     Limits of Transfer Learning with a Unified Text-to-Text Transformer. The Journal of Machine Learning Research 21, 1 (2022), 5485–5551.
+[50] Pranav Rajpurkar, Jian Zhang, Konstantin Lopyrev, and Percy Liang. 2016. SQuAD: 100,000+ Questions for Machine Comprehension of Text.
+     arXiv:1606.05250 [cs.CL] https://arxiv.org/abs/1606.05250
+[51] Luca Soldaini and Kyle Lo. 2023. peS2o (Pretraining Efficiently on S2ORC) Dataset. Technical Report. Allen Institute for AI. ODC-By, https:
+     //github.com/allenai/pes2o.
+[52] UNESCO and International Task Force on Teachers for Education 2030. 2024. Global Report on Teachers: Addressing Teacher Shortages and Transforming
+     the Profession. UNESCO, Paris. 187 pages. https://doi.org/10.54675/FIGU8035 CC BY-SA 3.0 IGO.
+[53] Kristiyan Vachev, Momchil Hardalov, Georgi Karadzhov, Georgi Georgiev, Ivan Koychev, and Preslav Nakov. 2022. Leaf: Multiple-choice question
+     generation. In Proc. of the European Conf. on Information Retrieval.
+[54] Shen Wang, Tianlong Xu, Hang Li, Chaoli Zhang, Joleen Liang, Jiliang Tang, Philip S. Yu, and Qingsong Wen. 2024. Large Language Models for
+     Education: A Survey and Outlook. arXiv:2403.18105 [cs.CL] https://arxiv.org/abs/2403.18105
+[55] Z. Wang, A. S. Lan, W. Nie, A. E. Waters, P. J. Grimaldi, and R. G. Baraniuk. 2018. QG-Net: A Data-Driven Question Generation Model for Educational
+     Content. In Proceedings of the Fifth Annual ACM Conference on Learning at Scale (26–28 June 2018). London, UK.
+[56] Gautam Yadav, Ying-Jui Tseng, and Xiaolin Ni. 2023. Contextualizing problems to student interests at scale in intelligent tutoring system using large
+     language models. arXiv preprint arXiv:2306.00190 (2023).
+[57] Michael V. Yudelson, Kenneth R. Koedinger, and Geoffrey J. Gordon. 2013. Individualized Bayesian Knowledge Tracing Models. In Proc. of Artificial
+     Intelligence in Education, H. Chad Lane, Kalina Yacef, Jack Mostow, and Philip Pavlik (Eds.).
+[58] L. Zhang and A. Rettinger. 2014. Final Ontological Word-Sense Disambiguation Prototype. Deliverable D3.2.3. xLike Project.
+[59] Ruqing Zhang, Jiafeng Guo, Lu Chen, Yixing Fan, and Xueqi Cheng. 2021. A Review on Question Generation from Natural Language Text. ACM
+     Trans. Inf. Syst. 40, 1, Article 14 (sep 2021), 43 pages. https://doi.org/10.1145/3468889
+[60] Tianyi Zhang, Varsha Kishore, Felix Wu, Kilian Q. Weinberger, and Yoav Artzi. 2020. BERTScore: Evaluating Text Generation with BERT.
+     arXiv:1904.09675 [cs.CL] https://arxiv.org/abs/1904.09675
+
+
+Received Not Available; revised Not Available; accepted Not Available
+
+
+Manuscript submitted to ACM
+

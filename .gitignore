@@ -1,0 +1,13 @@
+.venv/
+data/
+outputs/checkpoints/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+*.log
+wandb/
+scripts/aws/*.pem
+scripts/aws/.instance_id
+scripts/aws/.instance_ip
+outputs/logs_from_aws/
+.~lock.*#

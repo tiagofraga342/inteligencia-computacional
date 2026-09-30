@@ -1,0 +1,64 @@
+{
+  "metrics": {
+    "checkpoint": "outputs/checkpoints/baseline_qg/checkpoint-357",
+    "n_eval_examples": 300,
+    "bleu": 5.16199746960761,
+    "rouge1": 0.2514236632273779,
+    "rouge2": 0.0889110175101234,
+    "rougeL": 0.22978017964342629,
+    "meteor": 0.2476600816387726,
+    "f1": 0.2220361041266909
+  },
+  "examples": [
+    {
+      "context": "Private schooling in the United States has been debated by educators, lawmakers and parents, since the beginnings of compulsory education in Massachusetts in 1852. The Supreme Court precedent appears to favor educational choice, so long as states may set standards for educational accomplishment. Som",
+      "reference_question": "In what year did Massachusetts first require children to be educated in schools?",
+      "generated_question": "How many U.S. 510 (1925); Meyer v. Nebraska, 262 U.S. 390 (1923)."
+    },
+    {
+      "context": "The chloroplast membranes sometimes protrude out into the cytoplasm, forming a stromule, or stroma-containing tubule. Stromules are very rare in chloroplasts, and are much more common in other plastids like chromoplasts and amyloplasts in petals and roots, respectively. They may exist to increase th",
+      "reference_question": "When were stromules discovered?",
+      "generated_question": "What do chloroplast membranes form in the cytoplasm?"
+    },
+    {
+      "context": "Not only the work of British artists and craftspeople is on display, but also work produced by European artists that was purchased or commissioned by British patrons, as well as imports from Asia, including porcelain, cloth and wallpaper. Designers and artists whose work is on display in the galleri",
+      "reference_question": "Which artist who had a major influence on the Gothic Revival is represented in the V&A's British galleries?",
+      "generated_question": "Who is a major influence on the Gothic Revival?"
+    },
+    {
+      "context": "In the 1890s, the University of Chicago, fearful that its vast resources would injure smaller schools by drawing away good students, affiliated with several regional colleges and universities: Des Moines College, Kalamazoo College, Butler University, and Stetson University. In 1896, the university a",
+      "reference_question": "In 1890, who did the university decide to team up with?",
+      "generated_question": "What was the name of the university affiliated with in 1896?"
+    },
+    {
+      "context": "After a punt from both teams, Carolina got on track with a 9-play, 73-yard scoring drive. Newton completed 4 of 4 passes for 51 yards and rushed twice for 25 yards, while Jonathan Stewart finished the drive with a 1-yard touchdown run, cutting the score to 10\u20137 with 11:28 left in the second quarter.",
+      "reference_question": "Who got a touchdown making the score 10-7?",
+      "generated_question": "How many yards did Newton pass for a touchdown?"
+    },
+    {
+      "context": "In India, private schools are called independent schools, but since some private schools receive financial aid from the government, it can be an aided or an unaided school. So, in a strict sense, a private school is an unaided independent school. For the purpose of this definition, only receipt of f",
+      "reference_question": "How many Examination Boards exist in India?",
+      "generated_question": "How many different Examination Boards are present in multiple states?"
+    },
+    {
+      "context": "The Writers Guild of America strike that halted production of network programs for much of the 2007\u201308 season affected the network in 2007\u201308 and 2008\u201309, as various ABC shows that premiered in 2007, such as Dirty Sexy Money, Pushing Daisies, Eli Stone and Samantha Who?, did not live to see a third ",
+      "reference_question": "Who started rumors in 2008 that ABC would sell its ten owned-and-operated stations?",
+      "generated_question": "When did the Writers Guild of America strike?"
+    },
+    {
+      "context": "CBS broadcast Super Bowl 50 in the U.S., and charged an average of $5 million for a 30-second commercial during the game. The Super Bowl 50 halftime show was headlined by the British rock group Coldplay with special guest performers Beyonc\u00e9 and Bruno Mars, who headlined the Super Bowl XLVII and Supe",
+      "reference_question": "Which network broadcasted the 50th Super Bowl game? ",
+      "generated_question": "Who headlined the Super Bowl XLVII and Super Bowl XLVIII halftime shows?"
+    },
+    {
+      "context": "In 1973, Nixon named William E. Simon as the first Administrator of the Federal Energy Office, a short-term organization created to coordinate the response to the embargo. Simon allocated states the same amount of domestic oil for 1974 that each had consumed in 1972, which worked for states whose po",
+      "reference_question": "Why was this short termed organization created?",
+      "generated_question": "What did the American Automobile Association report that 20% of American gasoline stations had no fuel?"
+    },
+    {
+      "context": "There is evidence that there have been significant changes in Amazon rainforest vegetation over the last 21,000 years through the Last Glacial Maximum (LGM) and subsequent deglaciation. Analyses of sediment deposits from Amazon basin paleolakes and from the Amazon Fan indicate that rainfall in the b",
+      "reference_question": "What does LGM stands for?",
+      "generated_question": "What did some scientists argue that the rainforest was reduced to?"
+    }
+  ]
+}

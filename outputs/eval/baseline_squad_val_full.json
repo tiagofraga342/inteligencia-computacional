@@ -1,0 +1,64 @@
+{
+  "metrics": {
+    "checkpoint": "outputs/checkpoints/baseline_qg/checkpoint-357",
+    "n_eval_examples": 10570,
+    "bleu": 6.7640798941489795,
+    "rouge1": 0.26773268752490154,
+    "rouge2": 0.09471651390178698,
+    "rougeL": 0.2446874372612656,
+    "meteor": 0.2537385774861268,
+    "f1": 0.2345853513960023
+  },
+  "examples": [
+    {
+      "context": "Super Bowl 50 was an American football game to determine the champion of the National Football League (NFL) for the 2015 season. The American Football Conference (AFC) champion Denver Broncos defeated the National Football Conference (NFC) champion Carolina Panthers 24\u201310 to earn their third Super B",
+      "reference_question": "Which NFL team represented the AFC at Super Bowl 50?",
+      "generated_question": "What was the name of the Super Bowl 50?"
+    },
+    {
+      "context": "Super Bowl 50 was an American football game to determine the champion of the National Football League (NFL) for the 2015 season. The American Football Conference (AFC) champion Denver Broncos defeated the National Football Conference (NFC) champion Carolina Panthers 24\u201310 to earn their third Super B",
+      "reference_question": "Which NFL team represented the NFC at Super Bowl 50?",
+      "generated_question": "What was the name of the Super Bowl 50?"
+    },
+    {
+      "context": "Super Bowl 50 was an American football game to determine the champion of the National Football League (NFL) for the 2015 season. The American Football Conference (AFC) champion Denver Broncos defeated the National Football Conference (NFC) champion Carolina Panthers 24\u201310 to earn their third Super B",
+      "reference_question": "Where did Super Bowl 50 take place?",
+      "generated_question": "What was the name of the Super Bowl 50?"
+    },
+    {
+      "context": "Super Bowl 50 was an American football game to determine the champion of the National Football League (NFL) for the 2015 season. The American Football Conference (AFC) champion Denver Broncos defeated the National Football Conference (NFC) champion Carolina Panthers 24\u201310 to earn their third Super B",
+      "reference_question": "Which NFL team won Super Bowl 50?",
+      "generated_question": "What was the name of the Super Bowl 50?"
+    },
+    {
+      "context": "Super Bowl 50 was an American football game to determine the champion of the National Football League (NFL) for the 2015 season. The American Football Conference (AFC) champion Denver Broncos defeated the National Football Conference (NFC) champion Carolina Panthers 24\u201310 to earn their third Super B",
+      "reference_question": "What color was used to emphasize the 50th anniversary of the Super Bowl?",
+      "generated_question": "What was the name of the Super Bowl 50?"
+    },
+    {
+      "context": "Super Bowl 50 was an American football game to determine the champion of the National Football League (NFL) for the 2015 season. The American Football Conference (AFC) champion Denver Broncos defeated the National Football Conference (NFC) champion Carolina Panthers 24\u201310 to earn their third Super B",
+      "reference_question": "What was the theme of Super Bowl 50?",
+      "generated_question": "What was the name of the Super Bowl 50?"
+    },
+    {
+      "context": "Super Bowl 50 was an American football game to determine the champion of the National Football League (NFL) for the 2015 season. The American Football Conference (AFC) champion Denver Broncos defeated the National Football Conference (NFC) champion Carolina Panthers 24\u201310 to earn their third Super B",
+      "reference_question": "What day was the game played on?",
+      "generated_question": "What was the name of the Super Bowl 50?"
+    },
+    {
+      "context": "Super Bowl 50 was an American football game to determine the champion of the National Football League (NFL) for the 2015 season. The American Football Conference (AFC) champion Denver Broncos defeated the National Football Conference (NFC) champion Carolina Panthers 24\u201310 to earn their third Super B",
+      "reference_question": "What is the AFC short for?",
+      "generated_question": "What was the name of the Super Bowl 50?"
+    },
+    {
+      "context": "Super Bowl 50 was an American football game to determine the champion of the National Football League (NFL) for the 2015 season. The American Football Conference (AFC) champion Denver Broncos defeated the National Football Conference (NFC) champion Carolina Panthers 24\u201310 to earn their third Super B",
+      "reference_question": "What was the theme of Super Bowl 50?",
+      "generated_question": "What was the name of the Super Bowl 50?"
+    },
+    {
+      "context": "Super Bowl 50 was an American football game to determine the champion of the National Football League (NFL) for the 2015 season. The American Football Conference (AFC) champion Denver Broncos defeated the National Football Conference (NFC) champion Carolina Panthers 24\u201310 to earn their third Super B",
+      "reference_question": "What does AFC stand for?",
+      "generated_question": "What was the name of the Super Bowl 50?"
+    }
+  ]
+}
